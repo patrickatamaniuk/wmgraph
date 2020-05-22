@@ -1,14 +1,15 @@
-import logging
 import json
+import logging
+import os
 
-import requests
 import msal
+import requests
 
-from .tokencache import TokenCache
 from ..utils import jdebug
+from .cache import Cache
 from .deltaiterator import GenericDeltaIterator
 from .exceptions import MgraphApiError, MgraphConnectionError
-from .cache import Cache
+from .tokencache import TokenCache
 
 
 class ApiArgs:
@@ -37,6 +38,10 @@ class MgraphBase:
         self.args = ApiArgs(args)
 
         keyfilename = self.params['private_key_file']
+        if not keyfilename.startswith('/'):  # relative to config
+            keyfilename = os.path.join(os.path.dirname(
+                params), self.params['private_key_file'])
+
         if self.args.cache:
             self.cache = Cache(args)
             if self.args.purge_cache:
@@ -189,7 +194,8 @@ class MgraphBase:
             logging.debug(f'POST {url}')
             jdebug(graph_data, caller='post')
         if 'error' in graph_data:
-            raise MgraphApiError(graph_data, f'MsGraph POST Error: {url} {data}')
+            raise MgraphApiError(
+                graph_data, f'MsGraph POST Error: {url} {data}')
         return graph_data
 
     def post_paged(self, url, data=None):
@@ -212,7 +218,8 @@ class MgraphBase:
             logging.debug(f'PATCH {url}')
             jdebug(graph_data, caller='patch')
         if 'error' in graph_data:
-            raise MgraphApiError(graph_data, f'MsGraph PATCH Error: {url} {data}')
+            raise MgraphApiError(
+                graph_data, f'MsGraph PATCH Error: {url} {data}')
         return graph_data
 
     def delete(self, url):
@@ -226,5 +233,6 @@ class MgraphBase:
             logging.debug(f'DELETE {url}')
             jdebug(response.json(), caller='delete')
         if response.status_code != 204:  # pylint: disable=no-member
-            raise MgraphApiError(response.json(), f'MsGraph DELETE Error: {url}')
+            raise MgraphApiError(
+                response.json(), f'MsGraph DELETE Error: {url}')
         return response

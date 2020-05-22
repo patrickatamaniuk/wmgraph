@@ -18,7 +18,7 @@ config.json
 "client_id": "CLIENT_ID",
 "scope": [ "https://graph.microsoft.com/.default" ],
 "thumbprint": "SRERVER.CRT.FINGERPRINT",
-"private_key_file": "PATH_TO_CERTS/server.pem",
+"private_key_file": "PATH_TO_CERTS(can be relative)/server.pem",
 "endpoint": "https://graph.microsoft.com/v1.0"
 }
 ```
