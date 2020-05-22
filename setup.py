@@ -38,6 +38,7 @@ setup(
     author_email="patrick.atamaniuk@wibas.com",
     description="Microsoft Graph convenience library",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url="https://github.com/patrickatamaniuk/wmgraph",
     license="MIT License",
 
