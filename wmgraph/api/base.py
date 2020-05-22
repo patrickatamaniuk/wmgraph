@@ -1,4 +1,3 @@
-import sys
 import logging
 import json
 
@@ -8,7 +7,7 @@ import msal
 from .tokencache import TokenCache
 from ..utils import jdebug
 from .deltaiterator import GenericDeltaIterator
-from .exceptions import MgraphApiError
+from .exceptions import MgraphApiError, MgraphConnectionError
 from .cache import Cache
 
 
@@ -57,6 +56,9 @@ class MgraphBase:
         self.args.debug = True
 
     def connect(self):
+        '''
+        raises MgraphConnectionError
+        '''
         # The pattern to acquire a token looks like this.
         result = None
 
@@ -81,14 +83,11 @@ class MgraphBase:
             logging.error(result.get("error_description"))
             # You may need this when reporting a bug
             logging.error(result.get("correlation_id"))
-            raise MgraphApiError(result)
+            raise MgraphConnectionError(result)
 
     def _assert_connected(self):
         if not self.access_token:
             self.connect()
-        if not self.access_token:
-            logging.error('No access_token available.')
-            sys.exit(1)
 
     def _url(self, url):
         '''add endpoint to url if it has no complete protocol'''
@@ -146,12 +145,15 @@ class MgraphBase:
     def get_paged(self, url, **kwargs):
         '''
         iterator over all graph results. Supports @odata.nextLink paging
+
+        this is an alias for get_deltaiterator
         '''
         return self.get_deltaiterator(url, **kwargs)
 
     def get_deltaiterator(self, url, deltalink=None, **kwargs):
         '''
-        iterator over all graph results. Supports @odata.nextLink paging and maintains @odata.deltaLink for next call
+        iterator over all graph results.
+        Supports @odata.nextLink paging and maintains @odata.deltaLink for next call
         '''
         return GenericDeltaIterator(self, url, deltalink=deltalink, **kwargs)
 
@@ -187,7 +189,7 @@ class MgraphBase:
             logging.debug(f'POST {url}')
             jdebug(graph_data, caller='post')
         if 'error' in graph_data:
-            raise MgraphApiError(graph_data)
+            raise MgraphApiError(graph_data, f'MsGraph POST Error: {url} {data}')
         return graph_data
 
     def post_paged(self, url, data=None):
@@ -210,7 +212,7 @@ class MgraphBase:
             logging.debug(f'PATCH {url}')
             jdebug(graph_data, caller='patch')
         if 'error' in graph_data:
-            raise MgraphApiError(graph_data)
+            raise MgraphApiError(graph_data, f'MsGraph PATCH Error: {url} {data}')
         return graph_data
 
     def delete(self, url):
@@ -224,5 +226,5 @@ class MgraphBase:
             logging.debug(f'DELETE {url}')
             jdebug(response.json(), caller='delete')
         if response.status_code != 204:  # pylint: disable=no-member
-            raise MgraphApiError(response.json())
+            raise MgraphApiError(response.json(), f'MsGraph DELETE Error: {url}')
         return response

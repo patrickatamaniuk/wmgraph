@@ -27,7 +27,7 @@ def get_version(rel_path):
 long_description = read(os.path.join(here, 'README.md'))
 
 # Load requirements
-with open(os.path.join(here, 'requirements.txt'), encoding='utf-8') as f:
+with codecs.open(os.path.join(here, 'requirements.txt')) as f:
     requirements=[line.strip() for line in f.readlines()]
 
 print(long_description)
