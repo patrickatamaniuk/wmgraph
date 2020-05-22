@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+env
+*.db
+tokencache.bin
+*.json
+
+certs/server.*
+my_cache.bin
+.DS_Store
+.vscode/
+build/
+dist/
+*.egg-info
