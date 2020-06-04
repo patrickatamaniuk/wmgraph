@@ -14,7 +14,7 @@ class MgraphConnectorUserContactMixin:
 
     def list_contacts(self, uid=None, folder=None):
         url = self.mk_url(uid, folder)
-        return self.get(url)
+        return self.get_paged(url)
 
     def create_contact(self, uid=None, folder=None, data=None):
         url = self.mk_url(uid, folder)
