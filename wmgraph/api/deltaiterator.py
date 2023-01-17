@@ -1,3 +1,5 @@
+import logging
+
 
 class GenericDeltaIterator:
     def __init__(self, api, url=None, deltalink=None, **kwargs):
@@ -32,8 +34,10 @@ class GenericDeltaIterator:
         while 'value' in graph_data:
             deltanext = graph_data.get('@odata.nextLink')
             self.deltalink = graph_data.get('@odata.deltaLink')
+            logging.debug(' nextLink %s', deltanext)
 
             for val in graph_data['value']:
+                # print ('  yield', val['id'], val['name'])
                 yield val
 
             if deltanext:
