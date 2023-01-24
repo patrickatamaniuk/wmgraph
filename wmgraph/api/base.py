@@ -118,10 +118,26 @@ class MgraphBase:
             else:
                 break
 
-    def get(self, url, **kwargs):
+    def get(self, url, **kwargs): # FIXME make this a decorator for other request calls
+        ''' deal with exceptions:
+wmgraph.api.exceptions.MgraphApiError codes:
+  InvalidAuthenticationToken
+  itemNotFound
+        '''
+        try:
+            return self._get(url, **kwargs)
+        except MgraphApiError as ex:
+            if ex.code == 'InvalidAuthenticationToken':
+                logging.error('Exception in get, retrying with new token... Error was `%s`', ex.code)
+            else:
+                raise
+        self.access_token = None
+        return self._get(url, **kwargs)
+
+    def _get(self, url, **kwargs):
         self._assert_connected()
         if kwargs:
-            params = '&'.join([f"${k}={v}" for k, v in kwargs.items() if k])
+            params = '&'.join([f"${k}={v}" for k, v in kwargs.items() if k]) # FIXME urlencode!
             if params:
                 params = '?' + params
         else:
@@ -142,7 +158,7 @@ class MgraphBase:
             jdebug(graph_data, caller='get')
 
         if 'error' in graph_data:
-            raise MgraphApiError(
+            raise MgraphApiError( # FIXME count errors
                 graph_data, f'MsGraph GET Error: {url}{params}')
 
         return graph_data

@@ -36,7 +36,7 @@ class MgraphConnectorDriveMixin:
 
         url = f'/drives/{self.drive_id}/root/delta'
         iterator = GenericDeltaIterator(self, url, deltalink=deltalink)
-        for delta in iterator:
+        for delta in iterator: # yield from iterator # FIXME
             yield delta
 
         deltalink = iterator.get_next_url()
